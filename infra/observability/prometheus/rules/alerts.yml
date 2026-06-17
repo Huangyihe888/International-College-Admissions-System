@@ -1,0 +1,254 @@
+# =============================================================================
+# Prometheus alerting rules for WYU 招生 RAG 问答系统
+# -----------------------------------------------------------------------------
+# 4 组规则:后端应用 / RAG·LLM / 队列 / 基础设施
+# - severity: critical | warning
+# - team: rag-platform(业务) | infra(基础设施)
+# - runbook_url:占位 wiki.example.com,生产替换为公司 wiki
+# =============================================================================
+
+groups:
+  # ========================================================================
+  # 1. 后端应用
+  # ========================================================================
+  - name: backend-app
+    interval: 30s
+    rules:
+      - alert: BackendDown
+        expr: up{job="backend"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: rag-platform
+          component: backend
+        annotations:
+          summary: "WYU 后端实例下线 ({{ $labels.instance }})"
+          description: "backend job 已连续 5 分钟抓取失败,实例 {{ $labels.instance }} 不可达。立即检查 NestJS 进程 / 容器 / 端口。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/backend-down"
+
+      - alert: HighErrorRate5xx
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+          sum(rate(http_requests_total[5m]))
+            > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: backend
+        annotations:
+          summary: "WYU 后端 5xx 错误率 > 5%"
+          description: "最近 5 分钟 HTTP 5xx 错误率持续超过 5%(当前 {{ $value | humanizePercentage }})。重点排查网关 / 数据库 / LLM 上游异常。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/high-5xx"
+
+      - alert: SlowP99Latency
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum by (le, route) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: backend
+        annotations:
+          summary: "WYU 后端 P99 延迟 > 2s (route={{ $labels.route }})"
+          description: "路由 {{ $labels.route }} 的 P99 延迟为 {{ $value | humanizeDuration }},持续 5 分钟超过 2s 阈值。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/slow-p99"
+
+      - alert: HealthCheckFailing
+        expr: probe_success{health_target="backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: rag-platform
+          component: healthcheck
+        annotations:
+          summary: "WYU 健康检查失败 ({{ $labels.instance }})"
+          description: "Blackbox 探针在 1 分钟内连续无法访问 {{ $labels.instance }}。/health/live 应永远 200,检查进程。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/health-failing"
+
+  # ========================================================================
+  # 2. RAG / LLM
+  # ========================================================================
+  - name: rag-llm
+    interval: 30s
+    rules:
+      - alert: RAGNoAnswerRateHigh
+        expr: |
+          sum(rate(rag_requests_total{isAnswered="false"}[10m]))
+            /
+          sum(rate(rag_requests_total[10m]))
+            > 0.3
+        for: 10m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: rag
+        annotations:
+          summary: "WYU RAG 未答率 > 30%"
+          description: "最近 10 分钟 RAG 未答率 {{ $value | humanizePercentage }},可能命中禁答 / 检索无果 / LLM 拒答,需查 KB 覆盖率。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/no-answer-rate"
+
+      - alert: RAGLatencyP99High
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum by (le) (rate(rag_request_duration_seconds_bucket[10m]))
+          ) > 15
+        for: 10m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: rag
+        annotations:
+          summary: "WYU RAG 端到端 P99 > 15s"
+          description: "RAG 全链路 P99 延迟 {{ $value | humanizeDuration }},关注召回 / rerank / LLM 生成阶段。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/rag-slow"
+
+      - alert: LLMUpstreamErrors
+        expr: sum(rate(llm_errors_total[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: llm
+        annotations:
+          summary: "WYU LLM 上游错误率升高"
+          description: "近 5 分钟 LLM 上游错误率 {{ $value }} errors/s,可能为 token 用尽 / provider 5xx / 网络问题。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/llm-errors"
+
+      - alert: LLMLatencyP99High
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum by (le, model) (rate(llm_request_duration_seconds_bucket[5m]))
+          ) > 30
+        for: 5m
+        labels:
+          severity: critical
+          team: rag-platform
+          component: llm
+        annotations:
+          summary: "WYU LLM P99 延迟 > 30s (model={{ $labels.model }})"
+          description: "模型 {{ $labels.model }} 的 P99 延迟 {{ $value | humanizeDuration }},provider 响应过慢,考虑切换 / 限流。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/llm-slow"
+
+      - alert: LLMTokenExhausted
+        expr: sum(rate(llm_tokens_total[1h])) > 1000000
+        for: 30m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: llm
+          budget_alert: "true"
+        annotations:
+          summary: "WYU LLM 1h token 消耗超 1M"
+          description: "近 1 小时 token 速率 {{ $value | humanize }} tokens/s,折算 {{ $value | mul 3600 | humanize }} tokens/h,接近预算上限。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/llm-budget"
+
+  # ========================================================================
+  # 3. BullMQ 队列
+  # ========================================================================
+  - name: queues
+    interval: 30s
+    rules:
+      - alert: BullMQQueueBacklog
+        expr: bull_jobs_waiting{queue=~"document-ingest|embedding-batch"} > 1000
+        for: 5m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: queue
+        annotations:
+          summary: "WYU 队列积压 (queue={{ $labels.queue }})"
+          description: "队列 {{ $labels.queue }} 等待任务数 {{ $value }},持续 5 分钟,Worker 吞吐下降或上游突发流量。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/queue-backlog"
+
+      - alert: BullMQJobFailureRateHigh
+        expr: |
+          sum(rate(queue_jobs_total{status="failed"}[10m]))
+            /
+          sum(rate(queue_jobs_total[10m]))
+            > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          team: rag-platform
+          component: queue
+        annotations:
+          summary: "WYU 队列失败率 > 10%"
+          description: "近 10 分钟队列任务失败率 {{ $value | humanizePercentage }},查 Bull Board 与 Processor 日志。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/queue-failures"
+
+  # ========================================================================
+  # 4. 基础设施
+  # ========================================================================
+  - name: infra
+    interval: 30s
+    rules:
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+          component: postgres
+        annotations:
+          summary: "PostgreSQL 不可达"
+          description: "postgres_exporter 报告 pg_up=0 已 1 分钟,数据库进程或网络故障。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/postgres-down"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+          component: redis
+        annotations:
+          summary: "Redis 不可达"
+          description: "redis_exporter 报告 redis_up=0 已 1 分钟,BullMQ 与限流会同时失能。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/redis-down"
+
+      - alert: MinIOStorageDown
+        expr: minio_cluster_disk_offline > 0
+        for: 2m
+        labels:
+          severity: critical
+          team: infra
+          component: minio
+        annotations:
+          summary: "MinIO 集群有磁盘下线"
+          description: "MinIO 集群报告 {{ $value }} 块磁盘 offline,数据冗余下降,需立即替换磁盘。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/minio-disk"
+
+      - alert: DiskSpaceLow
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"}
+            /
+          node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          team: infra
+          component: host
+        annotations:
+          summary: "WYU 主机 / 盘剩余空间 < 10% (instance={{ $labels.instance }})"
+          description: "主机 {{ $labels.instance }} 的 / 分区可用率 {{ $value | humanizePercentage }},清理日志 / 容器 / 旧数据。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/disk-low"
+
+      - alert: MemoryHigh
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          team: infra
+          component: host
+        annotations:
+          summary: "WYU 主机内存使用率 > 90% (instance={{ $labels.instance }})"
+          description: "主机 {{ $labels.instance }} 内存使用率 {{ $value | humanizePercentage }},关注 NestJS RSS 与 LLM SDK 缓存。"
+          runbook_url: "https://wiki.example.com/runbooks/wyu-rag/memory-high"

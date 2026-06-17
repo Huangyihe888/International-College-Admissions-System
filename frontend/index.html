@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 基础 favicon + 优先使用 PWA 矢量图标 -->
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="alternate icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- 视口:移动端必填,允许用户缩放(无 maximum-scale,以满足无障碍 WCAG 1.4.4) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="五邑大学国际教育学院 2026 招生智能问答助手 — 基于官方招生资料与大语言模型,24 小时在线解答招生政策、专业介绍、报考流程、留学生招生等问题。"
+    />
+    <meta name="keywords" content="五邑大学,国际教育学院,2026 招生,招生问答,中外合作办学,来华留学" />
+
+    <!-- 营销页主题色(白底黑字) -->
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <!-- 兼容旧浏览器(取浅色) -->
+    <meta name="theme-color" content="#FFFFFF" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="WYU 招生" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/icons/icon.svg" />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- 移动端数字不自动加 tel: 链接(避免长串号码被误识别) -->
+    <meta name="format-detection" content="telephone=no" />
+
+    <title>五邑大学国际教育学院 · 招生智能问答助手</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

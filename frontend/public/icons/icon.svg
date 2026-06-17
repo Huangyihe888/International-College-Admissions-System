@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="WYU 招生问答">
+  <!--
+    WYU 招生问答 — 应用图标
+    设计: 圆角绿色背景 + 白色书本 + "WYU" 字样
+    采用 512x512 viewBox,可在任何尺寸下保持清晰。
+    适配 manifest.webmanifest 的 icons[].src (注意:purpose 已用 any,不要求 maskable)。
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 圆角背景,模拟 iOS / Android PWA 启动图标的 maskable 安全区 -->
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#bg)"/>
+
+  <!-- 书本图形 (lucide-react book 风格纯 path) -->
+  <g transform="translate(96 112)" fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 左页 -->
+    <path d="M160 36 L160 252"/>
+    <!-- 书脊 (中央竖线) -->
+    <path d="M160 36 L160 252"/>
+    <!-- 左半边书页 -->
+    <path d="M24 36 C24 28, 32 24, 40 24 L160 24 L160 252 L40 252 C32 252, 24 248, 24 240 Z"/>
+    <!-- 右半边书页 -->
+    <path d="M296 36 C296 28, 288 24, 280 24 L160 24 L160 252 L280 252 C288 252, 296 248, 296 240 Z"/>
+    <!-- 左页文字线 -->
+    <path d="M56 80 L128 80"/>
+    <path d="M56 120 L128 120"/>
+    <path d="M56 160 L112 160"/>
+    <!-- 右页文字线 -->
+    <path d="M192 80 L264 80"/>
+    <path d="M192 120 L264 120"/>
+    <path d="M192 160 L248 160"/>
+  </g>
+
+  <!-- 底部 "WYU" 字样 -->
+  <text x="256" y="440"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+        font-size="72"
+        font-weight="700"
+        fill="#ffffff"
+        text-anchor="middle"
+        letter-spacing="6">WYU</text>
+</svg>

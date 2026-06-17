@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "FaqItem" ADD COLUMN "aliases" TEXT[] DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE "FaqItem" ADD COLUMN "keywords" TEXT[] DEFAULT ARRAY[]::TEXT[];

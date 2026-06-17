@@ -1,0 +1,87 @@
+# ====== Node / pnpm ======
+node_modules/
+.pnpm-store/
+.pnp.*
+
+# ====== Build output ======
+dist/
+build/
+out/
+*.tsbuildinfo
+.next/
+.nuxt/
+.vite/
+.cache/
+
+# ====== Coverage / Testing ======
+coverage/
+*.lcov
+.nyc_output/
+junit.xml
+
+# ====== Environment ======
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.staging
+
+# ====== Logs ======
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ====== Runtime / OS ======
+.DS_Store
+Thumbs.db
+*.pid
+*.seed
+*.pid.lock
+.tmp/
+.temp/
+
+# ====== IDE / Editors ======
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# ====== Docker ======
+Dockerfile.bak
+docker-compose.override.yml
+
+# ====== Prisma ======
+backend/prisma/migrations/*/migration_lock.toml.bak
+
+# ====== NestJS ======
+backend/dist/
+backend/coverage/
+
+# ====== Vite / React ======
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+
+# ====== MinIO / Postgres data (bind mounts) ======
+pgvector-data/
+minio-data/
+redis-data/
+
+# ====== Misc ======
+.history/
+*.local
+
+# ====== Patch scripts (contain hardcoded API keys) ======
+backend/scripts/
+
+# ====== Claude Code (个人覆盖,不入库) ======
+.claude/settings.local.json

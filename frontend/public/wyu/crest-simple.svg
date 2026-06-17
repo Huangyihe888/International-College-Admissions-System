@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  五邑大学极简校徽 — MiMo 调性
+  - 只保留:圆环 + WYU 三字(跟 hero 字符网格的 WYU 一个语言)
+  - 纯黑 / 透明背景 / 矢量
+  - 不用真品校徽的飞雁 / 主楼 / 1985 / 弧形英文(太学院派,跟极简留白冲突)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="WYU">
+  <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="20" y="20" text-anchor="middle" dominant-baseline="central"
+        font-family="'Helvetica Neue','Arial',sans-serif"
+        font-size="10" font-weight="800" letter-spacing="0.6"
+        fill="currentColor">WYU</text>
+</svg>

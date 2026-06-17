@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>NoSuchBucket</Code><Message>The specified bucket does not exist</Message><BucketName>trae-image-upload</BucketName><RequestId>6D2VDM4YBHA38PRS</RequestId><HostId>TbYHs7p6aCRcdrmOy0pGu4+Bqepi93tHHeStIvwrzEIzPAl6aU4nLCwWGBg9/Cb+UYT1rdsfM/o=</HostId></Error>

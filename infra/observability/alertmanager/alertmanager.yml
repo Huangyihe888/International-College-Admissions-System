@@ -1,0 +1,119 @@
+# =============================================================================
+# Alertmanager configuration for WYU 招生 RAG 问答系统
+# -----------------------------------------------------------------------------
+# 路由:critical 走 pager,team=infra 走 infra-team,其余走 default
+# 抑制:同 alertname 的 critical 抑制 warning,避免双倍通知
+# 所有 webhook / email 占位,生产部署时替换为真实端点
+# =============================================================================
+
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: "smtp.example.com:587"
+  smtp_from: "alertmanager@example.com"
+  smtp_require_tls: true
+
+templates:
+  - "/etc/alertmanager/templates/*.tmpl"
+
+route:
+  receiver: default
+  group_by:
+    - alertname
+    - severity
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    # critical 走 PagerDuty / 飞书机器人
+    - matchers:
+        - severity = "critical"
+      receiver: pager
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 1h
+      continue: true
+    # 基础设施团队专属通道
+    - matchers:
+        - team = "infra"
+      receiver: infra-team
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    # 业务 / RAG 平台团队
+    - matchers:
+        - team = "rag-platform"
+      receiver: rag-platform-team
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+inhibit_rules:
+  # critical 抑制同 alertname 的 warning,避免重复告警
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
+    equal:
+      - alertname
+      - instance
+  # 进程下线抑制 latency / error_rate 类衍生告警
+  - source_matchers:
+      - alertname = "BackendDown"
+    target_matchers:
+      - alertname =~ "HighErrorRate5xx|SlowP99Latency"
+    equal:
+      - instance
+
+receivers:
+  - name: default
+    webhook_configs:
+      - url: "https://hooks.example.com/wyu-rag/default"
+        send_resolved: true
+        max_alerts: 0
+        timeout: 10s
+
+  - name: pager
+    # 生产可替换为 PagerDuty / 飞书 / 钉钉机器人
+    webhook_configs:
+      - url: "https://hooks.example.com/wyu-rag/pager-duty"
+        send_resolved: true
+        max_alerts: 0
+        timeout: 5s
+    # 同时邮件兜底
+    email_configs:
+      - to: "oncall-rag@example.com"
+        send_resolved: true
+        headers:
+          Subject: "[PAGER][WYU-RAG] {{ .GroupLabels.alertname }} ({{ .Status }})"
+        html: |
+          <h2>{{ .GroupLabels.alertname }} - {{ .Status }}</h2>
+          <p><b>Severity:</b> {{ .GroupLabels.severity }}</p>
+          <p><b>Instance:</b> {{ .CommonLabels.instance }}</p>
+          <p><b>Summary:</b> {{ .CommonAnnotations.summary }}</p>
+          <p><b>Description:</b> {{ .CommonAnnotations.description }}</p>
+          <p><a href="{{ .CommonAnnotations.runbook_url }}">Runbook</a></p>
+
+  - name: infra-team
+    email_configs:
+      - to: "infra-team@example.com"
+        send_resolved: true
+        headers:
+          Subject: "[INFRA][WYU-RAG] {{ .GroupLabels.alertname }} ({{ .Status }})"
+        html: |
+          <h2>{{ .GroupLabels.alertname }} - {{ .Status }}</h2>
+          <p><b>Component:</b> {{ .GroupLabels.component }}</p>
+          <p><b>Summary:</b> {{ .CommonAnnotations.summary }}</p>
+          <p><b>Description:</b> {{ .CommonAnnotations.description }}</p>
+    webhook_configs:
+      - url: "https://hooks.example.com/wyu-rag/infra"
+        send_resolved: true
+
+  - name: rag-platform-team
+    email_configs:
+      - to: "rag-platform@example.com"
+        send_resolved: true
+        headers:
+          Subject: "[RAG][WYU-RAG] {{ .GroupLabels.alertname }} ({{ .Status }})"
+    webhook_configs:
+      - url: "https://hooks.example.com/wyu-rag/rag-platform"
+        send_resolved: true

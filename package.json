@@ -1,0 +1,25 @@
+{
+  "name": "wyu-rag",
+  "version": "0.1.0",
+  "private": true,
+  "description": "五邑大学国际教育学院 2026 招生 RAG 问答系统 — 根工作区",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --stream run dev",
+    "build": "pnpm -r --stream run build",
+    "test": "pnpm -r --stream run test",
+    "lint": "pnpm -r --stream run lint",
+    "typecheck": "pnpm -r --stream run typecheck",
+    "clean": "pnpm -r --stream run clean && rimraf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\""
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "prettier": "^3.3.2"
+  }
+}

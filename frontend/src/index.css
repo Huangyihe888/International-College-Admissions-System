@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* MiMo 风格主题 — 暖白 #faf7f5 + 纯黑 */
+    --background: 28 20% 97%;             /* #faf7f5 暖白 */
+    --foreground: 0 0% 0%;               /* #000 纯黑 */
+    --card: 28 20% 97%;
+    --card-foreground: 0 0% 0%;
+    --popover: 28 20% 97%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;                  /* 纯黑主色 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 28 15% 93%;             /* #f0ebe6 稍深暖白 */
+    --secondary-foreground: 0 0% 0%;
+    --muted: 28 15% 93%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 0%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 0%;                   /* 黑色描边 */
+    --input: 0 0% 0%;
+    --ring: 0 0% 0%;
+    --radius: 3px;                        /* 微圆角,mimo 风格 */
+
+    /* 辅助色 */
+    --wyu-red: 0 0% 0%;                  /* 兼容旧引用 */
+    --wyu-red-dark: 0 0% 0%;
+    --wyu-red-light: 28 20% 97%;
+    --wyu-text: 0 0% 0%;                 /* #000 正文 */
+    --wyu-text-muted: 0 0% 40%;          /* #666 次要 */
+    --wyu-border: 0 0% 0%;               /* 黑色描边 */
+    --wyu-bg-alt: 28 15% 93%;            /* #f0ebe6 浅暖灰 */
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142 65% 45%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 142 30% 18%;
+    --accent-foreground: 142 65% 80%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142 65% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+  }
+}
+
+/* ============================================================
+ * 移动端适配 utilities (SubTask 13.9)
+ * ============================================================ */
+@layer utilities {
+  /* 100dvh:iOS Safari 地址栏收起后动态可视高度,解决 100vh 在移动端"地址栏遮挡"问题 */
+  .h-screen-mobile {
+    height: 100dvh;
+  }
+  .min-h-screen-mobile {
+    min-height: 100dvh;
+  }
+
+  /* 安全区(iPhone 刘海/小白条):env(safe-area-inset-*) */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* 滚动容器:启用 iOS 弹性滚动 */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* 触摸目标最小 44x44(Apple HIG / WCAG 2.5.5 推荐) */
+  .touch-target {
+    min-width: 2.75rem;   /* 44px */
+    min-height: 2.75rem;  /* 44px */
+  }
+}
+
+/* ============================================================
+ * 断点样式(Tailwind 已提供 sm/md/lg/xl/2xl,这里补充组件级)
+ * ============================================================ */
+@layer components {
+  /* 聊天消息气泡 — 小屏(<640px)最大宽度拉到 95%,提升可读性 */
+  .chat-bubble {
+    @apply max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed break-words sm:max-w-[75%] md:max-w-[65%];
+  }
+  .chat-bubble-user {
+    @apply chat-bubble bg-[#000] text-white ml-auto rounded-br-sm;
+  }
+  .chat-bubble-assistant {
+    @apply chat-bubble bg-muted text-foreground mr-auto rounded-bl-sm;
+  }
+}
+
+/* ============================================================
+ * 营销页品牌主题 — MiMo 风格:暖白底 + 纯黑 + 黑色描边
+ *   - 用于 HomePage,不影响 /chat 与 /admin
+ * ============================================================ */
+.wyu-brand {
+  --background: 28 20% 97%;                /* #faf7f5 暖白 */
+  --foreground: 0 0% 0%;
+  --card: 28 20% 97%;
+  --card-foreground: 0 0% 0%;
+  --popover: 28 20% 97%;
+  --popover-foreground: 0 0% 0%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 28 15% 93%;
+  --secondary-foreground: 0 0% 0%;
+  --muted: 28 15% 93%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 0%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 0%;
+  --input: 0 0% 0%;
+  --ring: 0 0% 0%;
+
+  background-color: #faf7f5;
+  color: #000;
+}
+
+/* ============================================================
+ * 横屏适配:矮高度 + 横屏时隐藏装饰性元素
+ *   配合 [data-mobile-only] 属性使用:
+ *   <div data-mobile-only class="landscape:hidden">...</div>
+ * ============================================================ */
+@media (orientation: landscape) and (max-height: 500px) {
+  [data-mobile-only] {
+    display: none !important;
+  }
+}
+
+/* 横屏且小屏:iOS Safari 横屏时地址栏会顶到内容,自动给 root 加 safe-area 顶部内边距 */
+@supports (-webkit-touch-callout: none) {
+  @media (orientation: landscape) {
+    body {
+      padding-top: env(safe-area-inset-top);
+    }
+  }
+}
+
+/* 高 DPI / Retina 屏字体渲染锐化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+}
+
+/* 用户偏好:减少动效(无障碍) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

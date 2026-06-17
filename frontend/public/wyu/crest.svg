@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  五邑大学校徽 — 自绘 SVG 版
+  元素依据官网校训校徽页描述(https://www.wyu.edu.cn/xuxgk/xx_xh_xg.htm):
+    - 圆形外环:中英文校名
+    - 上方:五只飞雁(代表"五邑"和"内外合力")
+    - 中间:南区教学主楼剪影
+    - 下方:建校时间 1985
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="五邑大学校徽">
+  <defs>
+    <!-- 弧形文字 path:上弧 -->
+    <path id="arc-top" d="M 30 100 A 70 70 0 0 1 170 100" fill="none"/>
+    <!-- 弧形文字 path:下弧 -->
+    <path id="arc-bottom" d="M 30 100 A 70 70 0 0 0 170 100" fill="none"/>
+  </defs>
+
+  <!-- 外圈(双圆) -->
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#000" stroke-width="2"/>
+  <circle cx="100" cy="100" r="82" fill="none" stroke="#000" stroke-width="1"/>
+
+  <!-- 外圈上弧:中文校名"五邑大学" -->
+  <text font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',serif"
+        font-size="20" font-weight="700" fill="#000" letter-spacing="6">
+    <textPath href="#arc-top" startOffset="50%" text-anchor="middle">五邑大学</textPath>
+  </text>
+
+  <!-- 外圈下弧:英文校名"WUYI UNIVERSITY" -->
+  <text font-family="'Helvetica Neue','Arial',sans-serif"
+        font-size="10" font-weight="600" fill="#000" letter-spacing="2">
+    <textPath href="#arc-bottom" startOffset="50%" text-anchor="middle">WUYI · UNIVERSITY</textPath>
+  </text>
+
+  <!-- 内部主视觉:五只飞雁 + 主楼 + 1985 -->
+  <g transform="translate(100 100)">
+    <!-- 五只飞雁(上方,V 形阵列,左右对称 1-2-3-2-1 布局) -->
+    <g fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <!-- 中心 3 只(高一些) -->
+      <path d="M -14 -28 Q -12 -32 -10 -28 Q -8 -32 -6 -28"/>
+      <path d="M  -2 -32 Q   0 -36  2 -32 Q   4 -36  6 -32"/>
+      <path d="M  10 -28 Q  12 -32 14 -28 Q  16 -32 18 -28"/>
+      <!-- 左右各 1 只(低一些) -->
+      <path d="M -26 -22 Q -24 -25 -22 -22 Q -20 -25 -18 -22"/>
+      <path d="M  22 -22 Q  24 -25 26 -22 Q  28 -25 30 -22"/>
+    </g>
+
+    <!-- 南区教学主楼(中间,居中) -->
+    <g fill="#000" transform="translate(0 4)">
+      <!-- 主体:中央高楼 + 左右配楼(典型对称台阶式) -->
+      <!-- 中央主楼(最高) -->
+      <rect x="-6" y="-22" width="12" height="32"/>
+      <!-- 中央主楼顶部(钟楼/塔尖简化) -->
+      <polygon points="-7,-22 7,-22 4,-30 0,-34 -4,-30"/>
+      <!-- 左配楼(中等) -->
+      <rect x="-22" y="-10" width="14" height="20"/>
+      <polygon points="-23,-10 -7,-10 -10,-16 -20,-16"/>
+      <!-- 右配楼(中等) -->
+      <rect x="8" y="-10" width="14" height="20"/>
+      <polygon points="7,-10 23,-10 20,-16 10,-16"/>
+      <!-- 最外侧矮楼 -->
+      <rect x="-32" y="-2" width="8" height="12"/>
+      <rect x="24" y="-2" width="8" height="12"/>
+      <!-- 底座基线 -->
+      <rect x="-34" y="10" width="68" height="3"/>
+      <!-- 中央入口门洞(白色挖空) -->
+      <rect x="-3" y="0" width="6" height="10" fill="#fff"/>
+    </g>
+
+    <!-- 1985 建校时间(下方) -->
+    <text x="0" y="38" text-anchor="middle"
+          font-family="'Helvetica Neue','Arial',sans-serif"
+          font-size="11" font-weight="700" fill="#000" letter-spacing="2">1985</text>
+
+    <!-- 两条短装饰线(在 1985 两侧) -->
+    <line x1="-22" y1="34" x2="-12" y2="34" stroke="#000" stroke-width="0.8"/>
+    <line x1="12" y1="34" x2="22" y2="34" stroke="#000" stroke-width="0.8"/>
+  </g>
+</svg>

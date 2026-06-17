@@ -1,0 +1,272 @@
+// Prisma schema for 五邑大学国际教育学院 2026 招生 RAG 问答系统
+// 包含 pgvector 向量字段、tsvector 全文检索字段
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector, pg_trgm]
+}
+
+// ====== 鉴权 / RBAC ======
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions Json     @default("[]")
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  passwordHash String
+  displayName  String?
+  email        String?    @unique
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id])
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  uploads      UploadJob[]
+  documents    Document[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// ====== 知识库版本 ======
+model KnowledgeBaseVersion {
+  id          String     @id @default(cuid())
+  version     String     @unique
+  description String?
+  isActive    Boolean    @default(false)
+  activatedAt DateTime?
+  documents   Document[]
+  sessions    ChatSession[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([isActive])
+}
+
+// ====== 文档 ======
+enum DocumentStatus {
+  PENDING
+  PARSING
+  CHUNKING
+  EMBEDDING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+model Document {
+  id            String         @id @default(cuid())
+  kbVersionId   String
+  kbVersion     KnowledgeBaseVersion @relation(fields: [kbVersionId], references: [id])
+  title         String
+  fileKey       String
+  fileType      String
+  fileSize      Int
+  status        DocumentStatus @default(PENDING)
+  errorMessage  String?
+  chunkCount    Int            @default(0)
+  processedAt   DateTime?
+  metadata      Json           @default("{}")
+  uploaderId    String
+  uploader      User           @relation(fields: [uploaderId], references: [id])
+  chunks        DocumentChunk[]
+  uploadJobs    UploadJob[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([kbVersionId])
+  @@index([status])
+}
+
+model DocumentChunk {
+  id         String                       @id @default(cuid())
+  documentId String
+  document   Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chunkIndex Int
+  content    String
+  contentTs  Unsupported("tsvector")?
+  embedding  Unsupported("vector(1024)")?
+  tokenCount Int                          @default(0)
+  metadata   Json                         @default("{}")
+  createdAt  DateTime                     @default(now())
+
+  @@index([documentId])
+}
+
+// ====== FAQ ======
+model FaqItem {
+  id        String                        @id @default(cuid())
+  question  String
+  aliases   String[]                      @default([])
+  answer    String
+  category  String?
+  keywords  String[]                      @default([])
+  embedding Unsupported("vector(1024)")?
+  isActive  Boolean                       @default(true)
+  hitCount  Int                           @default(0)
+  createdAt DateTime                      @default(now())
+  updatedAt DateTime                      @updatedAt
+
+  @@index([isActive])
+  @@index([category])
+}
+
+// ====== 禁答规则 ======
+enum ForbiddenRuleType {
+  KEYWORD
+  REGEX
+  CATEGORY
+}
+
+model ForbiddenRule {
+  id        String            @id @default(cuid())
+  name      String
+  pattern   String
+  ruleType  ForbiddenRuleType
+  reply     String?
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([isActive])
+}
+
+// ====== 会话 / 消息 ======
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model ChatSession {
+  id          String        @id @default(cuid())
+  userId      String?
+  visitorId   String?
+  title       String?
+  kbVersionId String?
+  kbVersion   KnowledgeBaseVersion? @relation(fields: [kbVersionId], references: [id])
+  messages    ChatMessage[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([visitorId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id         String        @id @default(cuid())
+  sessionId  String
+  session    ChatSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role       MessageRole
+  content    String
+  sources    Json?
+  confidence Float?
+  ragLogId   String?       @unique
+  ragLog     RagLog?       @relation(fields: [ragLogId], references: [id])
+  feedback   Feedback?
+  latencyMs  Int?
+  createdAt  DateTime      @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+enum FeedbackRating {
+  UP
+  DOWN
+}
+
+model Feedback {
+  id        String          @id @default(cuid())
+  messageId String          @unique
+  message   ChatMessage     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  rating    FeedbackRating
+  comment   String?
+  createdAt DateTime        @default(now())
+}
+
+// ====== RAG 日志 ======
+model RagLog {
+  id               String      @id @default(cuid())
+  sessionId        String?
+  message          ChatMessage?
+  query            String
+  rewrittenQuery   String?
+  retrievedTopK    Json        @default("[]")
+  rerankedTopK     Json?
+  faqHit           Boolean     @default(false)
+  confidence       Float?
+  isAnswered       Boolean
+  rejectReason     String?
+  promptTokens     Int?
+  completionTokens Int?
+  latencyMs        Int         @default(0)
+  llmProvider      String      @default("unknown")
+  embeddingModel   String?
+  rerankModel      String?
+  createdAt        DateTime    @default(now())
+
+  @@index([createdAt])
+  @@index([isAnswered])
+}
+
+// ====== 异步任务 ======
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model UploadJob {
+  id           String     @id @default(cuid())
+  documentId   String?
+  document     Document?  @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  uploaderId   String
+  uploader     User       @relation(fields: [uploaderId], references: [id])
+  status       JobStatus  @default(QUEUED)
+  progress     Int        @default(0)
+  stage        String?
+  errorMessage String?
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([status])
+  @@index([uploaderId])
+}
+
+// ====== 审计日志 ======
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  username  String?
+  action    String
+  resource  String?
+  resourceId String?
+  payload   Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}

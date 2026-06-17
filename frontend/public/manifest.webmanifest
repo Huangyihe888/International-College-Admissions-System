@@ -1,0 +1,45 @@
+{
+  "name": "WYU 招生智能问答",
+  "short_name": "WYU 招生",
+  "description": "五邑大学国际教育学院 2026 招生智能问答",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "立即提问",
+      "short_name": "问答",
+      "description": "直接进入招生问答",
+      "url": "/chat",
+      "icons": [
+        { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+      ]
+    }
+  ]
+}
